@@ -8,7 +8,7 @@ const bookSchema = new mongoose.Schema({
     publishedOn: { type: Date, required: true },
     editorial: { type: String, required: true },
     cost: { type: Number, required: true },
-    owner: { type: Number, required: true },
+    owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     deletedOn: {type: Date, required: false}
 }, { timestamps: true });
 

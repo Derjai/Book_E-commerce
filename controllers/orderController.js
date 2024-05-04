@@ -1,5 +1,6 @@
 const Order = require('../models/orderModel');
 const Book = require('../models/bookModel');
+const { deleteBook } = require('./bookController');
 
 exports.createOrder = async (req, res, next) => {
     try {
@@ -33,11 +34,10 @@ exports.createOrder = async (req, res, next) => {
 
 exports.getOrders = async (req, res, next) => {
     try {
-        const { page = 1, limit = 10, id, sender, addressee, status, startDate, endDate } = req.query;
+        const { page = 1, limit = 10, sender, addressee, status, startDate, endDate } = req.query;
         const skip = (page - 1) * limit;
         const userId = req.user._id;
         const query = {deletedOn: null, $or : [{sender: userId}, {addressee: userId}]};
-        if (id) query.id = id;
         if (sender) query.sender = sender;
         if (addressee) query.addressee = addressee;
         if (status) query.status = status;
@@ -116,7 +116,13 @@ exports.updateOrder = async (req, res, next) => {
         } else {
             return res.status(403).send("You can't update this order");
         }
-        order.status = req.body.status;
+
+        if(status === 'Completed'){
+            for (let bookId of order.details){
+                await deleteBook(bookId);
+            }
+        }
+        order.status = status;
         await order.save();
         res.status(200).send(order);
     } catch (error) {

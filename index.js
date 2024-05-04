@@ -2,14 +2,15 @@ require('dotenv').config();
 const express = require('express');
 const connectDB = require('./config/db');
 const bodyParser = require('body-parser');
+const cors = require('cors');
 const app = express();
 
-//TODO: Add CORS, Finish implementing jwt authentication
 
 const usersRoutes = require('./routes/userRoutes');
 const booksRoutes = require('./routes/bookRoutes');
 const ordersRoutes = require('./routes/orderRoutes');
 
+app.use(cors());
 app.use(bodyParser.json());
 
 app.use('/users', usersRoutes);

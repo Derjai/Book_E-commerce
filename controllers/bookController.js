@@ -34,11 +34,10 @@ exports.createBook = async (req, res, next) => {
 
 exports.getBooks = async (req, res, next) => {
     try {
-        const { page = 1, limit = 10, id, genre, author, bookName, startDate, endDate, editorial} = req.query;
+        const { page = 1, limit = 10, genre, author, bookName, startDate, endDate, editorial} = req.query;
         const skip = (page - 1) * limit;
 
         const query = {deletedOn: null};
-        if (id) query.id = id;
         if (genre) query.genre = genre;
         if (author) query.author = author;
         if (bookName) query.name = bookName;

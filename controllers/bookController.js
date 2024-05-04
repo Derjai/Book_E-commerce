@@ -24,10 +24,7 @@ exports.createBook = async (req, res, next) => {
         if(!book.cost || typeof book.cost !== 'number') {
             return res.status(400).send("Book cost is required");
         }
-        if(!book.owner || typeof book.owner !== 'number') {
-            return res.status(400).send("Book owner is required");
-        }
-
+        book.owner = req.user._id;
         book.isbn = isbn;
         await book.save();
         res.status(201).send(book);
@@ -149,6 +146,9 @@ exports.updateBook = async (req, res, next) => {
         if (!book) {
             return res.status(404).send("Book not found with that ID", id);
         }
+        if (req.user._id !== book.owner.toString()) {
+            return res.status(403).send("You are not authorized to update this book");
+        }
         const updates = Object.keys(req.body);
         updates.forEach(update => book[update] = req.body[update]);
         await book.save();
@@ -163,6 +163,9 @@ exports.deleteBook = async (req, res, next) => {
         const book = await Book.findById(id);
         if (!book) {
             return res.status(404).send("Book not found with that ID", id);
+        }
+        if (req.user._id !== book.owner.toString()) {
+            return res.status(403).send("You are not authorized to delete this book");
         }
         book.deletedOn = new Date();
         await book.save();

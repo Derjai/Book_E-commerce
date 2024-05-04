@@ -63,21 +63,21 @@ exports.deleteUser = async (req, res, next) => {
         next(error);
     }};
 
-exports.login = async (req, res, next) => {
-    try {
-        const { userName, password } = req.body;
-        const user = await User.findOne({ userName });
-        if (!user) {
-            return res.status(401).json({ message: 'Authentication failed' });
-        }
-    
-        const validPassword = await bcrypt.compare(password, user.password);
-        if (!validPassword) {
-            return res.status(401).json({ message: 'Authentication failed' });
-        }
-    
-        const token = jwt.sign({ userName: user.userName, userId: user._id }, process.env.SECRET_KEY, { expiresIn: '1h' });
-        res.status(200).json({ token: token });
+    exports.login = async (req, res, next) => {
+        try {
+            const { userName, password } = req.body;
+            const user = await User.findOne({ userName });
+            if (!user) {
+                return res.status(401).json({ message: 'Authentication failed' });
+            }
+        
+            const validPassword = await bcrypt.compare(password, user.password);
+            if (!validPassword) {
+                return res.status(401).json({ message: 'Authentication failed' });
+            }
+        
+            const token = jwt.sign({ userName: user.userName, _id: user._id }, process.env.SECRET_KEY, { expiresIn: '1h' });
+            res.status(200).json({ token: token });
         } catch (error) {
             next(error);
         }

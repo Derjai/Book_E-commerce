@@ -15,7 +15,7 @@ exports.createBook = async (req, res, next) => {
         if(!book.author || typeof book.author !== 'string') {
             return res.status(400).send("Book author is required");
         }
-        if(!book.publishedOn || typeof book.publishedOn !== 'string' || isNaN(Date.parse(book.publishedOn))) {
+        if(!book.publishedOn) {
             return res.status(400).send("Book release date is required");
         }
         if(!book.editorial || typeof book.editorial !== 'string') {

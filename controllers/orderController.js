@@ -1,6 +1,7 @@
 const Order = require('../models/orderModel');
 const Book = require('../models/bookModel');
 const { deleteBook } = require('./bookController');
+const mongoose = require('mongoose');
 
 exports.createOrder = async (req, res, next) => {
     try {
@@ -8,7 +9,6 @@ exports.createOrder = async (req, res, next) => {
         if(!Array.isArray(books) || books.length === 0) {
             return res.status(400).send("Books must be an array with at least one element");
         }
-        
         const fetchedBooks = await Book.find({ _id: { $in: books } });
         if (fetchedBooks.length !== books.length) {
             return res.status(404).send("One or more books not found");
@@ -20,11 +20,19 @@ exports.createOrder = async (req, res, next) => {
         }
         const order = new Order({...req.body,
         total,
-        details: fetchedBooks.map(book=>book._id),
+        details: fetchedBooks.map(book => mongoose.Types.ObjectId.isValid(book._id) ? book._id.toString() : null),
         date: new Date(),
         addressee,
         sender: fetchedBooks[0].owner
         });
+        if (!Array.isArray(order.details)) {
+            return res.status(400).send("order.details must be an array");
+        }
+        for (let i = 0; i < order.details.length; i++) {
+            if (!mongoose.Types.ObjectId.isValid(order.details[i])) {
+                return res.status(400).send(`Invalid book ID in order details: ${order.details[i]}`);
+            }
+        }
         await order.save();
         res.status(201).send(order);
     } catch (error) {
@@ -137,7 +145,7 @@ exports.deleteOrder = async (req, res, next) => {
         if (!order) {
             return res.status(404).send("Order not found with that ID");
         }
-        if (req.user._id !== (order.sender.toString() || order.addressee.toString())) {
+        if (req.user._id !== order.sender.toString() && req.user._id !== order.addressee.toString()) {
             return res.status(403).send("You can't delete this order");
         }
         order.deletedOn = new Date();

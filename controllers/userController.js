@@ -41,6 +41,9 @@ exports.updateUser = async (req, res, next) => {
         if (!user) {
             return res.status(404).send("User not found with that ID");
         }
+        if (user.id.toString() !== req.user._id) {
+            return res.status(403).send("You are not allowed to update this user");
+        }
         const updates = Object.keys(req.body);
         updates.forEach(update => user[update] = req.body[update]);
         await user.save();
@@ -55,6 +58,9 @@ exports.deleteUser = async (req, res, next) => {
         const user = await User.findOne({ _id: id, deletedOn: null });
         if (!user) {
             return res.status(404).send("User not found with that ID");
+        }
+        if (user.id.toString() !== req.user._id) {
+            return res.status(403).send("You are not allowed to delete this user");
         }
         user.deletedOn = new Date();
         await user.save();
